@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Auto HTML Reader</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { border-collapse: collapse; margin-top: 20px; width: 500px; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background: #f2f2f2; }
+  </style>
+</head>
+<body>
+
+<h3>Upload HTML (auto parse)</h3>
+<input type="file" id="fileInput">
+
+<table>
+  <thead>
+    <tr>
+      <th>Month</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="out"></tbody>
+</table>
+
+<script>
+document.getElementById("fileInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const html = await file.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    const out = document.getElementById("out");
+    out.innerHTML = "";
+
+    // Grab EVERYTHING that could contain month text
+    const all = doc.querySelectorAll("div, p, span");
+
+    let results = [];
+
+    all.forEach(el => {
+        const text = el.textContent.trim();
+
+        // detect month-like values
+        const isMonth =
+            /^[A-Za-z]{3}$/.test(text) ||   // Jan, Feb, etc
+            /^'\d{2}$/.test(text);          // '25, '26
+
+        if (!isMonth) return;
+
+        // find nearest status container
+        let parent = el.closest("div");
+        let status = parent ? parent.className : "";
+
+        if (status.includes("status-C")) status = "C";
+        else if (status.includes("status-U")) status = "U";
+        else status = "Unknown";
+
+        results.push({ month: text, status });
+    });
+
+    // remove duplicates (important for messy HTML)
+    const seen = new Set();
+    results = results.filter(r => {
+        const key = r.month + r.status;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    // render
+    results.forEach(r => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${r.month}</td><td>${r.status}</td>`;
+        out.appendChild(row);
+    });
+});
+</script>
+
+</body>
+</html>
