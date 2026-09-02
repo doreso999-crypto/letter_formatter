@@ -1,11 +1,15 @@
 window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
 window.LETTER_TEMPLATES.latePayment = `I am writing to formally dispute inaccurate, incomplete, and/or unverifiable late-payment information being reported on my consumer credit file.
 
-After reviewing my credit report, I identified account information containing late-payment and/or delinquency history that I dispute as inaccurate, incomplete, inconsistent, and/or unverifiable. My dispute concerns the accuracy and completeness of the payment information being reported for the account or accounts identified in my dispute.
+After reviewing my credit report, I identified account information containing late-payment and/or delinquency history that I dispute as inaccurate, incomplete, inconsistent, and/or unverifiable. My dispute concerns the accuracy and completeness of the payment information being reported for the accounts identified below.
 
 The disputed information includes, but is not limited to, reported 30-day, 60-day, 90-day, or other delinquency notations, payment-status codes, reported dates of delinquency, payment history, and any other information indicating that payments were not made as reported.
 
-I am not requesting the removal of accurate information simply because it is negative. I am requesting a reasonable and meaningful investigation into whether the specific late-payment information being reported is accurate, complete, properly associated with the correct account, and supported by reliable records.
+DISPUTED ACCOUNTS:
+
+[[DISPUTED_ITEMS]]
+
+I am not requesting the removal of accurate information simply because it is negative. I am requesting a reasonable and meaningful investigation into whether the specific late-payment information being reported on these accounts is accurate, complete, properly associated with the correct account, and supported by reliable records.
 
 Pursuant to the Fair Credit Reporting Act, including 15 U.S.C. § 1681i, I request a thorough reinvestigation of each disputed item and the specific information being challenged.
 
