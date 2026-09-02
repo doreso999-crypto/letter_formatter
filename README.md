@@ -9,7 +9,7 @@ Local browser-only tool for turning compact credit-report notes into bureau-spec
 `TU` = TransUnion  
 `3BR` = all three bureaus
 
-An account tagged `3BR` is included in all three letters. An account tagged `EQU - TU` is included only in the Equifax and TransUnion letters.
+Accounts inherit the exact bureau routing from their final status line. An account tagged `3BR` appears in all three letters; `EQU - TU` appears only in the Equifax and TransUnion letters.
 
 ## Input format
 
@@ -41,16 +41,15 @@ $0
 - `index.html` — application interface
 - `styles.css` — application styling
 - `app.js` — parser, bureau routing, letter generation, copy/download actions
-- `app.html` — compatibility redirect to `index.html`
 
 ## Run
 
-Open `index.html` in a modern browser. No Python server or build process is required.
+Open `index.html` in a modern browser. No Python server or build step is required.
 
 ## Privacy
 
-The application processes pasted text locally in the browser. Do not commit real client information to the repository.
+All parsing happens in the browser. Do not commit real client information to GitHub.
 
 ## Important
 
-The generated correspondence is a general template and is not legal advice. Review each letter and verify every account detail against the underlying report before use.
+The correspondence is a general template and is not legal advice. Review each generated letter and verify the underlying report information before use.
