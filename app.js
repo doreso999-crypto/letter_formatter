@@ -1,7 +1,7 @@
 const BUREAUS = {
   EQU: { key: 'equifax', name: 'Equifax', address: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
   EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 4500\nAllen, TX 75013' },
-  TU: { key: 'transunion', name: 'TransUnion Consumer Solutions', address: 'TransUnion Consumer Solutions\nP.O. Box 2000\nChester, PA 19016-2000' }
+  TU: { key: 'transunion', name: 'TransUnion Consumer Dispute Center', address: 'TransUnion Consumer Dispute Center\nPO Box 2000\nChester, PA 19016' }
 };
 
 const EXAMPLE_PERSONAL = `John Doe\n2616 Kings Gate Dr\nCarrollton TX 75006\nDOB: 06/26/1968\nSSN: 123-45-6789`;
@@ -25,8 +25,8 @@ function formatLetterDate(value) {
 function parsePersonalInfo(text) {
   const lines=String(text||'').replace(/\r/g,'').split('\n').map(line=>line.trim()).filter(Boolean);
   const name=clean(lines[0]||'');
-  const dobIndex=lines.findIndex(line=>/^DOB\s*:/i.test(line));
-  const ssnIndex=lines.findIndex(line=>/^SSN\s*:/i.test(line));
+  const dobIndex=lines.findIndex(line=>/^(Date of Birth|DOB)\s*:/i.test(line));
+  const ssnIndex=lines.findIndex(line=>/^SS#?\s*:/i.test(line) || /^SSN\s*:/i.test(line));
   const cutoff=[dobIndex,ssnIndex].filter(i=>i>=0).sort((a,b)=>a-b)[0] ?? lines.length;
   return {name,address:lines.slice(1,cutoff).join('\n'),dob:dobIndex>=0?clean(lines[dobIndex].split(':').slice(1).join(':')):'',ssn:ssnIndex>=0?clean(lines[ssnIndex].split(':').slice(1).join(':')):''};
 }
@@ -48,7 +48,7 @@ function parseItems(text) {
     if(block.length===4 && block.every(Boolean)){
       const [label,identifier,balance,details]=block.map(clean), bureaus=detectBureaus(details);
       const validIdentifier=/[xX*#]/.test(identifier)||/\d{3,}/.test(identifier);
-      const validValue=/\$?\s*-?\d/.test(balance);
+      const validValue=/\$?\s*-?\d/.test(balance) || /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(balance);
       if(validIdentifier && validValue && bureaus.length){ items.push({label,identifier,balance,details,bureaus}); i+=4; continue; }
     }
     i++;
@@ -60,28 +60,23 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
+// Standardized account listing used by every category.
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
-function formatBankruptcyInfo(items){
-  const first=items[0];
-  return { caseNumber:first?.identifier || '', filingDate:first?.balance || '' };
-}
+function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
-  const identity=[person.name,person.address,person.dob?`DOB: ${person.dob}`:'',person.ssn?`SSN: ${person.ssn}`:''].filter(Boolean).join('\n');
+  const identity=[person.name,person.address,person.dob?`Date of Birth: ${person.dob}`:'',person.ssn?`SS#: ${person.ssn}`:''].filter(Boolean).join('\n');
   const category=window.LETTER_CATEGORY_MAP?.[categoryKey];
   let body=selectedTemplate(categoryKey)||base.opening||'';
   const disputed=itemLines(items);
-  if(categoryKey==='LATE_PAYMENT') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
-  if(categoryKey==='DISCHARGED_BANKRUPTCY') {
-    const bankruptcy=formatBankruptcyInfo(items);
-    body=body.replace('[[BANKRUPTCY_CASE_NUMBER]]',bankruptcy.caseNumber).replace('[[BANKRUPTCY_FILING_DATE]]',bankruptcy.filingDate);
-  }
+  if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
+  if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items));
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
-  const specialCategory=['LATE_PAYMENT','DISCHARGED_BANKRUPTCY'].includes(categoryKey);
+  const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY'].includes(categoryKey);
   const closing=category?.closing || (specialCategory ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
   const genericDisputed=specialCategory?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
   const closingBlock=closing?`\n\n${closing}`:'';
-  const salutation=categoryKey==='DISCHARGED_BANKRUPTCY' ? 'To Whom It May Concern:' : `Dear ${bureau.name} Consumer Dispute Department:`;
+  const salutation=(categoryKey==='DISCHARGED_BANKRUPTCY'||categoryKey==='DISMISSED_BANKRUPTCY') ? 'To Whom It May Concern:' : `Dear ${bureau.name}:`;
   return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\n${salutation}\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
 }
 function clearLetters(){results.innerHTML='';results.classList.add('hidden');emptyState.classList.remove('hidden');resultCount.textContent='0 letters';resultsTitle.textContent='No case loaded';resultsSubtitle.innerHTML='Click <strong>New Case</strong> to select the letter category and enter the case.';showToast('Letters cleared');}
