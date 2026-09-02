@@ -1,7 +1,7 @@
 const BUREAUS = {
   EQU: { key: 'equifax', name: 'Equifax', address: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
   EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 4500\nAllen, TX 75013' },
-  TU: { key: 'transunion', name: 'TransUnion', address: 'TransUnion Consumer Solutions\nP.O. Box 2000\nChester, PA 19016-2000' }
+  TU: { key: 'transunion', name: 'TransUnion Consumer Solutions', address: 'TransUnion Consumer Solutions\nP.O. Box 2000\nChester, PA 19016-2000' }
 };
 
 const EXAMPLE_PERSONAL = `John Doe\n2616 Kings Gate Dr\nCarrollton TX 75006\nDOB: 06/26/1968\nSSN: 123-45-6789`;
@@ -60,7 +60,6 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
-// Standard disputed-account listing used by ordinary account templates.
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
 function formatBankruptcyInfo(items){
   const first=items[0];
@@ -77,12 +76,13 @@ function buildLetter({person,bureau,items,date,categoryKey}){
     const bankruptcy=formatBankruptcyInfo(items);
     body=body.replace('[[BANKRUPTCY_CASE_NUMBER]]',bankruptcy.caseNumber).replace('[[BANKRUPTCY_FILING_DATE]]',bankruptcy.filingDate);
   }
-  const subject=category?.subject || (categoryKey==='LATE_PAYMENT' ? 'Re: Formal Dispute of Inaccurate Late-Payment Reporting' : `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`);
+  const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
   const specialCategory=['LATE_PAYMENT','DISCHARGED_BANKRUPTCY'].includes(categoryKey);
   const closing=category?.closing || (specialCategory ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
   const genericDisputed=specialCategory?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
   const closingBlock=closing?`\n\n${closing}`:'';
-  return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\nDear ${bureau.name} Consumer Dispute Department:\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
+  const salutation=categoryKey==='DISCHARGED_BANKRUPTCY' ? 'To Whom It May Concern:' : `Dear ${bureau.name} Consumer Dispute Department:`;
+  return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\n${salutation}\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
 }
 function clearLetters(){results.innerHTML='';results.classList.add('hidden');emptyState.classList.remove('hidden');resultCount.textContent='0 letters';resultsTitle.textContent='No case loaded';resultsSubtitle.innerHTML='Click <strong>New Case</strong> to select the letter category and enter the case.';showToast('Letters cleared');}
 function renderLetters(person,items,date,categoryKey){
