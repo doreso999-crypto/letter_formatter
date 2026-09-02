@@ -2,7 +2,6 @@ window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
 window.LETTER_TEMPLATES.hardInquiry = `I am formally disputing the hard inquiry listed below as unauthorized, fraudulent, and unverifiable. I did not authorize this inquiry, did not knowingly consent to it, and dispute its presence on my consumer report.
 
 [[INQUIRY_ITEMS]]
-    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY
 
 Pursuant to the Fair Credit Reporting Act, including 15 U.S.C. § 1681i, I demand a reasonable reinvestigation of each inquiry and verification of its permissible purpose and authorization.
 
