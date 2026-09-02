@@ -1,7 +1,7 @@
 const BUREAUS = {
-  EQU: { key: 'equifax', name: 'Equifax Information Services LLC', address: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
-  EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 2002\nAllen, TX 75013' },
-  TU: { key: 'transunion', name: 'TransUnion Consumer Dispute Center', address: 'PO Box 2000\nChester, PA 19016' }
+  EQU: { key: 'equifax', name: 'Equifax Information Services, LLC', address: 'Equifax Information Services, LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
+  EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 4500\nAllen, TX 75013' },
+  TU: { key: 'transunion', name: 'TransUnion Consumer Solutions', address: 'TransUnion Consumer Solutions\nP.O. Box 2000\nChester, PA 19016-2000' }
 };
 
 const EXAMPLE_PERSONAL = `John Doe\n2616 Kings Gate Dr\nCarrollton TX 75006\nDOB: 06/26/1968\nSSN: 123-45-6789`;
@@ -72,10 +72,7 @@ function parseItems(text) {
   return items;
 }
 function groupItems(items){ return {EQU:items.filter(x=>x.bureaus.includes('EQU')),EXP:items.filter(x=>x.bureaus.includes('EXP')),TU:items.filter(x=>x.bureaus.includes('TU'))}; }
-function selectedTemplate(categoryKey){
-  const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
-  return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
-}
+function selectedTemplate(categoryKey){ const option=window.LETTER_CATEGORY_MAP?.[categoryKey]; return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : ''; }
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} Account #: ${x.identifier}`).join('\n'); }
 function inquiryLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} ${x.identifier}`).join('\n') + (items.length ? '\n\n    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY' : ''); }
 function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
