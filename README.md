@@ -1,55 +1,58 @@
-# Letter Template
+# Letter Formatter
 
-Local browser-only tool for turning compact credit-report notes into bureau-specific dispute-letter drafts.
+A browser-only tool for turning compact credit-report account notes into bureau-specific letter drafts.
+
+## Workflow
+
+1. Click **New Case**.
+2. Enter the client's **Personal Info**.
+3. Choose the letter date. The default is calculated using the `America/New_York` timezone for Washington, DC.
+4. Paste account blocks using four lines per account:
+
+```text
+TBOM CCI MC
+Xxxxxxxx6638
+$531
+EX - TU - OPEN LP
+```
+
+5. Click **Generate Letters**.
+6. The output automatically creates a column for each bureau represented by the accounts.
 
 ## Bureau routing
 
-`EQU` = Equifax  
-`EXP` = Experian  
-`TU` = TransUnion  
-`3BR` = all three bureaus
+- `EQU` = Equifax
+- `EXP` or `EX` = Experian
+- `TU` = TransUnion
+- `3BR` = all three bureaus
 
-Accounts inherit the exact bureau routing from their final status line. An account tagged `3BR` appears in all three letters; `EQU - TU` appears only in the Equifax and TransUnion letters.
-
-## Input format
+Example:
 
 ```text
-John Doe
-2616 Kings Gate Dr
-Carrollton TX 75006
-DOB: 06/26/1968
-SSN: 123-45-6789
-
-SN BERNDINO
-Xxxxxxxxxxx8439
-$0
-EQU - TU - CLOSED LP
-
-THD/CBNA
-Xxxxxxxxxxxx7165
-$244
-3BR- OPEN LP
-
-CAPITAL ONE
-Xxxxxxxx3748
-$0
-3BR- INCLUDED IN BANKRUPTCY
+TBOM CCI MC
+Xxxxxxxx6638
+$531
+EX - TU - OPEN LP
 ```
+
+This account appears in the **Experian** and **TransUnion** letters only.
+
+An account tagged `3BR` appears in **all three** letters.
 
 ## Files
 
-- `index.html` — application interface
-- `styles.css` — application styling
-- `app.js` — parser, bureau routing, letter generation, copy/download actions
+- `index.html` — application interface and modal
+- `styles.css` — responsive UI styling
+- `app.js` — parser, Washington DC date handling, bureau routing, letter generation, copy, and TXT download
 
 ## Run
 
-Open `index.html` in a modern browser. No Python server or build step is required.
+Open `index.html` directly in a modern browser. No Python server or build process is required.
 
 ## Privacy
 
-All parsing happens in the browser. Do not commit real client information to GitHub.
+The application processes pasted data locally in the browser. Do not commit real client information to GitHub.
 
-## Important
+## Notice
 
-The correspondence is a general template and is not legal advice. Review each generated letter and verify the underlying report information before use.
+The generated correspondence is a general drafting template and is not legal advice. Review each output and verify all account details against the underlying report before use.
