@@ -73,10 +73,30 @@ function detectBureaus(line) {
 
 function classifyItem(statusLine) {
   const value = clean(statusLine).toUpperCase();
-  if (/HARD\s+INQUIRY|INQUIRY/.test(value)) return { key: 'HARD_INQUIRY', label: 'Hard Inquiry' };
-  if (/INCLUDED\s+IN\s+BANKRUPTCY|BANKRUPTCY|CHAPTER\s*7|CHAPTER\s*13|DISCHARGED|DISMISSED/.test(value)) return { key: 'BANKRUPTCY', label: 'Bankruptcy' };
-  if (/CHARGE.?OFF|COLLECTION|REPOSSESSION|REPO\b/.test(value)) return { key: 'CHARGE_OFF_COLLECTION_REPOSSESSION', label: 'Charge-Off / Collection / Repossession' };
-  return { key: 'OPEN_CLOSED_LATE', label: 'Open / Closed / Late Payment' };
+  if (/HARD\s+INQUIRY|INQUIRY/.test(value)) return { key: 'HARD_INQUIRY', label: 'Hard Inquiry', details: [] };
+
+  if (/INCLUDED\s+IN\s+BANKRUPTCY|BANKRUPTCY|CHAPTER\s*7|CHAPTER\s*13|DISCHARGED|DISMISSED/.test(value)) {
+    const details = [];
+    if (/CHAPTER\s*7/.test(value)) details.push('Chapter 7');
+    if (/CHAPTER\s*13/.test(value)) details.push('Chapter 13');
+    if (/DISCHARGED/.test(value)) details.push('Discharged');
+    if (/DISMISSED/.test(value)) details.push('Dismissed');
+    return { key: 'BANKRUPTCY', label: 'Bankruptcy', details };
+  }
+
+  if (/CHARGE.?OFF|COLLECTION|REPOSSESSION|REPO\b/.test(value)) {
+    const details = [];
+    if (/CHARGE.?OFF/.test(value)) details.push('Charge-Off');
+    if (/COLLECTION/.test(value)) details.push('Collection');
+    if (/REPOSSESSION|REPO\b/.test(value)) details.push('Repossession');
+    return { key: 'CHARGE_OFF_COLLECTION_REPOSSESSION', label: 'Charge-Off / Collection / Repossession', details };
+  }
+
+  const details = [];
+  if (/\bOPEN\b/.test(value)) details.push('Open');
+  if (/\bCLOSED\b/.test(value)) details.push('Closed');
+  if (/LATE\s+PAYMENT|\bLATE\b|\bLP\b/.test(value)) details.push('Late Payment');
+  return { key: 'OPEN_CLOSED_LATE', label: 'Open / Closed / Late Payment', details };
 }
 
 function parseItems(text) {
@@ -112,21 +132,19 @@ function groupAccounts(accounts) {
 
 function categoryTemplate(account) {
   const library = window.LETTER_TEMPLATES || {};
-  const category = account.category.key;
-  if (category === 'BANKRUPTCY') return library.bankruptcy || '';
-  if (category === 'CHARGE_OFF_COLLECTION_REPOSSESSION') return library.chargeOffCollectionRepossession || '';
-  if (category === 'HARD_INQUIRY') return library.hardInquiry || '';
-  return library.openClosedLate || '';
+  switch (account.category.key) {
+    case 'BANKRUPTCY': return library.bankruptcy || '';
+    case 'CHARGE_OFF_COLLECTION_REPOSSESSION': return library.chargeOffCollectionRepossession || '';
+    case 'HARD_INQUIRY': return library.hardInquiry || '';
+    default: return library.openClosedLate || '';
+  }
 }
 
 function accountLines(accounts) {
-  return accounts.map((a, i) => [
-    `${i + 1}. ${a.creditor}`,
-    `   Account: ${a.accountNumber}`,
-    `   Balance: ${a.balance}`,
-    `   Reported status/comment: ${a.status}`,
-    `   Category: ${a.category.label}`
-  ].join('\n')).join('\n\n');
+  return accounts.map((a, i) => {
+    const detail = a.category.details?.length ? `\n   Category details: ${a.category.details.join(', ')}` : '';
+    return [`${i + 1}. ${a.creditor}`, `   Account: ${a.accountNumber}`, `   Balance: ${a.balance}`, `   Reported status/comment: ${a.status}`, `   Category: ${a.category.label}${detail}`].join('\n');
+  }).join('\n\n');
 }
 
 function template({ person, bureau, accounts, date }) {
@@ -153,6 +171,7 @@ function renderLetters(person, accounts, date) {
   resultCount.textContent = `${active.length} letter${active.length === 1 ? '' : 's'}`;
   resultsTitle.textContent = `${person.name} · Letters Ready`;
   resultsSubtitle.textContent = `${accounts.length} item${accounts.length === 1 ? '' : 's'} parsed and routed to ${active.length} bureau${active.length === 1 ? '' : 's'}.`;
+
   if (!active.length) { results.classList.add('hidden'); emptyState.classList.remove('hidden'); return; }
   emptyState.classList.add('hidden'); results.classList.remove('hidden');
 
@@ -183,7 +202,7 @@ $('closeModalBtn').addEventListener('click', closeModal);
 $('cancelBtn').addEventListener('click', closeModal);
 $('clearLettersBtn').addEventListener('click', clearLetters);
 $('letterDate').addEventListener('change', updateDcDateNote);
-$('caseModal').addEventListener('click', event => { if (event.target === caseModal) closeModal(); });
+$('caseModal').addEventListener('click', event => { if (event.target === $('caseModal')) closeModal(); });
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !caseModal.classList.contains('hidden')) closeModal(); });
 
 caseForm.addEventListener('submit', event => {
