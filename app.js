@@ -60,15 +60,21 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
-function itemLines(items){ return items.map((x,i)=>[`${i+1}. ${x.label}`,`   Account / Identifier: ${x.identifier}`,`   Balance / Value: ${x.balance}`,`   Reported details: ${x.details}`].join('\n')).join('\n\n'); }
+function itemLines(items){ return items.map((x,i)=>[`${i+1}. ${x.label}`,`Account #: ${x.identifier}`,`Balance: ${x.balance}`,`Reporting: ${bureauNames(x.bureaus)}`,`Status: ${extractStatus(x.details)}`,'Dispute: Late-Payment Reporting'].join('\n')).join('\n\n'); }
+function bureauNames(codes){ return codes.map(code=>BUREAUS[code]?.name || code).join(' and '); }
+function extractStatus(details){ const match=String(details||'').match(/\b(OPEN|CLOSED)\b/i); return match ? match[1][0] + match[1].slice(1).toLowerCase() : 'Reported status not specified'; }
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
   const identity=[person.name,person.address,person.dob?`DOB: ${person.dob}`:'',person.ssn?`SSN: ${person.ssn}`:''].filter(Boolean).join('\n');
   const category=window.LETTER_CATEGORY_MAP?.[categoryKey];
-  const body=selectedTemplate(categoryKey)||base.opening||'';
-  const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
-  const closing=category?.closing || base.closing || 'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.';
-  return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\nDear ${bureau.name} Consumer Dispute Department:\n\n${body}\n\nDISPUTED ITEM(S)\n\n${itemLines(items)}\n\n${closing}\n\n${person.name}`;
+  let body=selectedTemplate(categoryKey)||base.opening||'';
+  const disputed=itemLines(items);
+  if(categoryKey==='LATE_PAYMENT') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
+  const subject=category?.subject || (categoryKey==='LATE_PAYMENT' ? 'Re: Formal Dispute of Inaccurate Late-Payment Reporting' : `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`);
+  const closing=category?.closing || (categoryKey==='LATE_PAYMENT' ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
+  const genericDisputed=categoryKey==='LATE_PAYMENT'?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
+  const closingBlock=closing?`\n\n${closing}`:'';
+  return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\nDear ${bureau.name} Consumer Dispute Department:\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
 }
 function clearLetters(){results.innerHTML='';results.classList.add('hidden');emptyState.classList.remove('hidden');resultCount.textContent='0 letters';resultsTitle.textContent='No case loaded';resultsSubtitle.innerHTML='Click <strong>New Case</strong> to select the letter category and enter the case.';showToast('Letters cleared');}
 function renderLetters(person,items,date,categoryKey){
