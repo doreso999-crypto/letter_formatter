@@ -1,2 +1,2 @@
 window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
-window.LETTER_TEMPLATES.hardInquiry = `I am disputing the hard inquiry identified below. Please conduct a reasonable reinvestigation of the inquiry, including the reported source, date, and permissible purpose, and correct or delete any information that cannot be verified as accurate and complete.`;
+window.LETTER_TEMPLATES.hardInquiry = 'I am writing to dispute the hard inquiry information identified below. Please verify the source, date, accuracy, and permissible purpose of each inquiry and remove any inquiry that cannot be verified as accurate and permissible.';
