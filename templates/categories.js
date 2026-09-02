@@ -1,5 +1,6 @@
 window.LETTER_CATEGORY_OPTIONS = [
-  { key: 'LATE_PAYMENT', label: 'Late Payment (for Deletion)', templateKey: 'latePayment', description: 'Dispute a late-payment mark and request deletion when it cannot be verified.' },
+  { key: 'LATE_PAYMENT', label: 'Late Payment', templateKey: 'latePayment', description: 'Dispute inaccurate or unverifiable late-payment reporting.' },
+  { key: 'DELETION', label: 'Deletion', templateKey: 'deletion', description: 'Request deletion of disputed information that cannot be verified as accurate and complete.' },
   { key: 'DISMISSED_BANKRUPTCY', label: 'Dismissed Bankruptcy', templateKey: 'dismissedBankruptcy', description: 'Bankruptcy reporting identified as dismissed.' },
   { key: 'DISCHARGED_BANKRUPTCY', label: 'Discharged Bankruptcy', templateKey: 'dischargedBankruptcy', description: 'Bankruptcy reporting identified as discharged.' },
   { key: 'CHAPTER_7_BANKRUPTCY', label: 'Chapter 7 Bankruptcy', templateKey: 'chapter7Bankruptcy', description: 'Chapter 7 bankruptcy reporting.' },
