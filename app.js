@@ -76,7 +76,7 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
-function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} Account #: ${x.identifier}`).join('\n\n'); }
+function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} Account #: ${x.identifier}`).join('\n'); }
 function inquiryLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} ${x.identifier}`).join('\n') + (items.length ? '\n\n    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY' : ''); }
 function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
 function buildLetter({person,bureau,items,date,categoryKey}){
@@ -87,7 +87,6 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
   if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items)).replace(/\n\s*I DID NOT AUTHORIZE THIS INQUIRY\. PLEASE DELETE THIS IMMEDIATELY\s*$/,'');
-  if(categoryKey==='FACTUAL') body=body.replace('[[FACTUAL_ITEMS]]',items.map((x,i)=>`${i+1}. **${x.label}** Account #: ${x.identifier}`).join('\n'));
   if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
   const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY','HARD_INQUIRY','FACTUAL'].includes(categoryKey);
