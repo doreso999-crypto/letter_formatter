@@ -19,6 +19,4 @@ Please provide written results of your investigation and identify any correction
 
 I have enclosed supporting documentation, including my government-issued identification and proof of address, for verification purposes.
 
-This is a formal dispute, and I expect the investigation to be completed within the applicable FCRA timeframe. If the inaccurate information is not corrected or deleted as required by law, I reserve all rights and remedies available to me under federal law.
-
-[[DISCHARGED_BANKRUPTCY_ITEMS]]`;
+This is a formal dispute, and I expect the investigation to be completed within the applicable FCRA timeframe. If the inaccurate information is not corrected or deleted as required by law, I reserve all rights and remedies available to me under federal law.`;
