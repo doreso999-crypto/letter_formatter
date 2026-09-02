@@ -50,8 +50,6 @@ function parseItems(text) {
     const raw=lines[i];
     if(!raw){i++;continue;}
 
-    // Support bureau headings such as "EQUIFAX:" and keep that bureau active
-    // until another bureau heading appears.
     const cleanedLine=raw.replace(/^[-•*]\s*/,'').trim();
     const heading=cleanedLine.replace(/[:：]\s*$/,'').trim().toUpperCase();
     const headingCode = heading==='EQUIFAX' ? 'EQU' : heading==='EXPERIAN' ? 'EXP' : heading==='TRANSUNION' ? 'TU' : null;
@@ -62,12 +60,9 @@ function parseItems(text) {
       continue;
     }
 
-    // Hard-inquiry format:
-    // - creditor name 12/06/2025
-    // Multiple inquiry rows may appear under one bureau heading.
     const inquiryMatch=cleanedLine.match(/^(.+?)\s+(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\s*$/);
     if(inquiryMode && currentBureau && inquiryMatch){
-      const creditor=clean(inquiryMatch[1].replace(/^[\-•*]\s*/,'').trim());
+      const creditor=clean(inquiryMatch[1]);
       const inquiryDate=inquiryMatch[2].replace(/-/g,'/');
       if(creditor && inquiryDate){
         items.push({
@@ -82,7 +77,6 @@ function parseItems(text) {
       continue;
     }
 
-    // Keep normal four-line account parsing available for all other categories.
     const block=lines.slice(i,i+4);
     if(block.length===4 && block.every(Boolean)){
       const [label,identifier,balance,details]=block.map(clean), bureaus=detectBureaus(details);
@@ -101,7 +95,7 @@ function selectedTemplate(categoryKey){
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
-function inquiryLines(items){ return items.map(x=>`**${x.label}**\n**Inquiry Date: ${x.identifier}**\n    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY`).join('\n\n\n'); }
+function inquiryLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} ${x.identifier}`).join('\n') + (items.length ? '\n\n    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY' : ''); }
 function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
@@ -110,7 +104,7 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   let body=selectedTemplate(categoryKey)||base.opening||'';
   const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
-  if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items));
+  if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items)).replace(/\n\s*I DID NOT AUTHORIZE THIS INQUIRY\. PLEASE DELETE THIS IMMEDIATELY\s*$/,'');
   if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
   const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY','HARD_INQUIRY'].includes(categoryKey);
