@@ -1,5 +1,5 @@
 const BUREAUS = {
-  EQU: { key: 'equifax', name: 'Equifax', address: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
+  EQU: { key: 'equifax', name: 'Equifax Information Services LLC', address: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
   EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 2002\nAllen, TX 75013' },
   TU: { key: 'transunion', name: 'TransUnion Consumer Dispute Center', address: 'PO Box 2000\nChester, PA 19016' }
 };
@@ -41,9 +41,21 @@ function detectBureaus(line) {
 }
 function parseItems(text) {
   const lines=String(text||'').replace(/\r/g,'').split('\n').map(line=>line.trim());
-  const items=[]; let i=0;
+  const items=[]; let i=0; let currentBureau=null;
   while(i<lines.length){
-    if(!lines[i]){i++;continue;}
+    const raw=lines[i];
+    if(!raw){i++;continue;}
+    const cleanedLine=raw.replace(/^[-•]\s*/,'').trim();
+    const heading=cleanedLine.replace(/[:：]\s*$/,'').toUpperCase();
+    const headingCode = heading==='EQUIFAX' ? 'EQU' : heading==='EXPERIAN' ? 'EXP' : heading==='TRANSUNION' ? 'TU' : null;
+    if(headingCode){ currentBureau=headingCode; i++; continue; }
+
+    const inquiryMatch=cleanedLine.match(/^(.+?)\s+(\d{1,2}\/\d{1,2}\/\d{2,4})$/);
+    if(inquiryMatch && currentBureau){
+      items.push({label:inquiryMatch[1].trim(),identifier:inquiryMatch[2],balance:inquiryMatch[2],details:'HARD INQUIRY',bureaus:[currentBureau]});
+      i++; continue;
+    }
+
     const block=lines.slice(i,i+4);
     if(block.length===4 && block.every(Boolean)){
       const [label,identifier,balance,details]=block.map(clean), bureaus=detectBureaus(details);
@@ -61,8 +73,8 @@ function selectedTemplate(categoryKey){
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
+function inquiryLines(items){ return items.map(x=>`**${x.label}**\n**Inquiry Date: ${x.identifier}**\n    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY`).join('\n\n\n'); }
 function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
-function inquiryLines(items){ return items.map(x=>`**${x.label}**\n**Inquiry Date: ${x.balance}**`).join('\n\n'); }
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
   const identity=[person.name,person.address,person.dob?`Date of Birth: ${person.dob}`:'',person.ssn?`SS#: ${person.ssn}`:''].filter(Boolean).join('\n');
@@ -70,8 +82,8 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   let body=selectedTemplate(categoryKey)||base.opening||'';
   const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
-  if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
   if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items));
+  if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
   const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY','HARD_INQUIRY'].includes(categoryKey);
   const closing=category?.closing || (specialCategory ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
