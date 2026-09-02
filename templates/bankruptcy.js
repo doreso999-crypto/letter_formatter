@@ -1,2 +1,0 @@
-window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
-window.LETTER_TEMPLATES.bankruptcy = `I am disputing the bankruptcy-related information reported for the account listed below. Please conduct a reasonable reinvestigation of the reported bankruptcy status, chapter, disposition, dates, balance, and comments and correct or delete any information that cannot be verified as accurate and complete.`;
