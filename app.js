@@ -60,12 +60,8 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
-function itemLines(items, categoryKey) {
-  if (categoryKey === 'LATE_PAYMENT') {
-    return items.map((x,i) => `${i+1}. ${x.label}\nAccount #: ${x.identifier}`).join('\n\n');
-  }
-  return items.map((x,i)=>[`${i+1}. ${x.label}`,`Account / Identifier: ${x.identifier}`,`Balance / Value: ${x.balance}`,`Reported details: ${x.details}`].join('\n')).join('\n\n');
-}
+// Standardize disputed-account listings across every letter category.
+function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
 function bureauNames(codes){ return codes.map(code=>BUREAUS[code]?.name || code).join(' and '); }
 function extractStatus(details){ const match=String(details||'').match(/\b(OPEN|CLOSED)\b/i); return match ? match[1][0] + match[1].slice(1).toLowerCase() : 'Reported status not specified'; }
 function buildLetter({person,bureau,items,date,categoryKey}){
@@ -73,7 +69,7 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   const identity=[person.name,person.address,person.dob?`DOB: ${person.dob}`:'',person.ssn?`SSN: ${person.ssn}`:''].filter(Boolean).join('\n');
   const category=window.LETTER_CATEGORY_MAP?.[categoryKey];
   let body=selectedTemplate(categoryKey)||base.opening||'';
-  const disputed=itemLines(items, categoryKey);
+  const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
   const subject=category?.subject || (categoryKey==='LATE_PAYMENT' ? 'Re: Formal Dispute of Inaccurate Late-Payment Reporting' : `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`);
   const closing=category?.closing || (categoryKey==='LATE_PAYMENT' ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
