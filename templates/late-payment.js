@@ -1,27 +1,37 @@
 window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
 window.LETTER_TEMPLATES.latePayment = `I am writing to formally dispute inaccurate, incomplete, and/or unverifiable late-payment information being reported on my consumer credit file.
 
-I have carefully reviewed my credit report and identified accounts that are reporting late-payment history even though the accuracy, completeness, and verifiability of the reported payment history are disputed. This issue concerns both accounts currently reported as open and accounts reported as closed.
+After reviewing my credit report, I identified account information containing late-payment and/or delinquency history that I dispute as inaccurate, incomplete, inconsistent, and/or unverifiable. My dispute concerns the accuracy and completeness of the payment information being reported for the account or accounts identified in my dispute.
 
-The disputed information includes, but is not limited to, reported 30-day, 60-day, 90-day, or other delinquency notations, dates associated with those alleged delinquencies, payment status information, and any other reporting codes or payment-history data that indicate that I failed to make payments as reported.
+The disputed information includes, but is not limited to, reported 30-day, 60-day, 90-day, or other delinquency notations, payment-status codes, reported dates of delinquency, payment history, and any other information indicating that payments were not made as reported.
 
-I am not asking for accurate information to be deleted simply because it is negative. I am requesting a reasonable investigation into whether the specific late-payment information being reported is accurate, complete, properly associated with the correct account, and supported by competent records.
+I am not requesting the removal of accurate information simply because it is negative. I am requesting a reasonable and meaningful investigation into whether the specific late-payment information being reported is accurate, complete, properly associated with the correct account, and supported by reliable records.
 
-Under the Fair Credit Reporting Act, including 15 U.S.C. § 1681i, disputed information must be investigated. Additionally, information furnished to a consumer reporting agency must be accurate and complete. The CFPB identifies accounts incorrectly reported as late or delinquent and incorrect payment-history information as examples of credit-reporting errors that consumers may dispute.
+Pursuant to the Fair Credit Reporting Act, including 15 U.S.C. § 1681i, I request a thorough reinvestigation of each disputed item and the specific information being challenged.
 
-For each disputed account, please investigate the following:
+For each disputed account, please investigate and determine:
 
-1. Whether the account actually became delinquent on each date being reported.
-2. Whether the reported date of each alleged late payment is accurate.
-3. Whether the reported payment status corresponds with the account's actual payment history.
-4. Whether payments received were properly credited and applied to the account.
-5. Whether the account was accurately reported as open or closed during the periods for which late payments are being reported.
-6. Whether the reported payment history is complete and internally consistent with the account's other reported information.
-7. Whether the information being furnished can be verified through the furnisher's underlying records rather than merely being repeated from previously reported data.
-8. Whether any contradictory account information, including balances, dates, account status, or payment history, is causing the late-payment information to be inaccurate or incomplete.
+1. Whether the reported payment history is accurate and complete.
+2. Whether each reported late payment or delinquency actually occurred as reported.
+3. Whether the reported date of each alleged late payment or delinquency is accurate.
+4. Whether the reported payment-status codes accurately reflect the actual payment history.
+5. Whether payments received were properly credited and applied to the account.
+6. Whether the account status and payment information are accurately reported for the applicable reporting periods.
+7. Whether the historical payment information being reported is supported by the furnisher's underlying records.
+8. Whether the payment history is internally consistent with the account's reported balance, status, dates, and other account information.
+9. Whether any inaccurate, incomplete, contradictory, or unverifiable information is contributing to the late-payment reporting.
+10. Whether the information currently being reported can be verified as accurate and complete based upon competent records rather than simply relying upon previously reported information.
 
-The fact that an account is now closed does not resolve the dispute concerning the accuracy of its historical payment information. Likewise, the fact that an account remains open does not establish that every late-payment notation associated with that account is accurate.
+I specifically request that your investigation address the actual late-payment information being disputed and not merely confirm that an account exists or that the same information was previously furnished.
 
-Please conduct a reasonable investigation of each disputed account and review all relevant information available to you. If the furnisher cannot substantiate the specific late-payment information being reported, the inaccurate or unverifiable information should be corrected or deleted from my file.
+The fact that information has previously been reported does not, by itself, establish that the information is accurate, complete, or verifiable. The specific disputed payment history, dates, status codes, and related information should be reviewed as part of the reinvestigation.
 
-I also request that the investigation not be limited to simply confirming that the account exists. The specific information being disputed is the late-payment history and the accuracy of the dates, status codes, and payment information associated with that history.`;
+If any disputed information is determined to be inaccurate, incomplete, inconsistent, or unverifiable, I request that such information be corrected or deleted from my consumer file as required by applicable law.
+
+Upon completion of the investigation, please provide written results identifying the outcome of the reinvestigation and any information that was corrected, modified, or deleted.
+
+Please also provide an updated copy of my consumer report reflecting any changes resulting from this dispute.
+
+I expect this dispute to be investigated fully and in accordance with the requirements of the Fair Credit Reporting Act. I am retaining copies of this correspondence and any supporting documentation for my records.
+
+Please provide the written results of your investigation upon completion.`;
