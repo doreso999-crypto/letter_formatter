@@ -60,10 +60,12 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
-// Standardize disputed-account listings across every letter category.
+// Standard disputed-account listing used by ordinary account templates.
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
-function bureauNames(codes){ return codes.map(code=>BUREAUS[code]?.name || code).join(' and '); }
-function extractStatus(details){ const match=String(details||'').match(/\b(OPEN|CLOSED)\b/i); return match ? match[1][0] + match[1].slice(1).toLowerCase() : 'Reported status not specified'; }
+function formatBankruptcyInfo(items){
+  const first=items[0];
+  return { caseNumber:first?.identifier || '', filingDate:first?.balance || '' };
+}
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
   const identity=[person.name,person.address,person.dob?`DOB: ${person.dob}`:'',person.ssn?`SSN: ${person.ssn}`:''].filter(Boolean).join('\n');
@@ -71,9 +73,14 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   let body=selectedTemplate(categoryKey)||base.opening||'';
   const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
+  if(categoryKey==='DISCHARGED_BANKRUPTCY') {
+    const bankruptcy=formatBankruptcyInfo(items);
+    body=body.replace('[[BANKRUPTCY_CASE_NUMBER]]',bankruptcy.caseNumber).replace('[[BANKRUPTCY_FILING_DATE]]',bankruptcy.filingDate);
+  }
   const subject=category?.subject || (categoryKey==='LATE_PAYMENT' ? 'Re: Formal Dispute of Inaccurate Late-Payment Reporting' : `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`);
-  const closing=category?.closing || (categoryKey==='LATE_PAYMENT' ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
-  const genericDisputed=categoryKey==='LATE_PAYMENT'?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
+  const specialCategory=['LATE_PAYMENT','DISCHARGED_BANKRUPTCY'].includes(categoryKey);
+  const closing=category?.closing || (specialCategory ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
+  const genericDisputed=specialCategory?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
   const closingBlock=closing?`\n\n${closing}`:'';
   return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\nDear ${bureau.name} Consumer Dispute Department:\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
 }
@@ -96,7 +103,7 @@ function renderLetters(person,items,date,categoryKey){
     results.appendChild(card);
   });
 }
-function escapeHtml(str){return String(str).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));}
+function escapeHtml(str){return String(str).replace(/[&<>\"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[s]));}
 function downloadText(filename,text){const blob=new Blob([text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);showToast('Letter downloaded');}
 function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove('show'),1800);}
 function showModalError(message){modalError.textContent=message;modalError.classList.remove('hidden');}
