@@ -1,7 +1,7 @@
 const BUREAUS = {
   EQU: { key: 'equifax', name: 'Equifax', address: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374-0256' },
-  EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 4500\nAllen, TX 75013' },
-  TU: { key: 'transunion', name: 'TransUnion Consumer Dispute Center', address: 'TransUnion Consumer Dispute Center\nPO Box 2000\nChester, PA 19016' }
+  EXP: { key: 'experian', name: 'Experian', address: 'Experian\nP.O. Box 2002\nAllen, TX 75013' },
+  TU: { key: 'transunion', name: 'TransUnion Consumer Dispute Center', address: 'PO Box 2000\nChester, PA 19016' }
 };
 
 const EXAMPLE_PERSONAL = `John Doe\n2616 Kings Gate Dr\nCarrollton TX 75006\nDOB: 06/26/1968\nSSN: 123-45-6789`;
@@ -60,9 +60,9 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
-// Standardized account listing used by every category.
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
 function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
+function inquiryLines(items){ return items.map(x=>`**${x.label}**\n**Inquiry Date: ${x.balance}**`).join('\n\n'); }
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
   const identity=[person.name,person.address,person.dob?`Date of Birth: ${person.dob}`:'',person.ssn?`SS#: ${person.ssn}`:''].filter(Boolean).join('\n');
@@ -70,13 +70,14 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   let body=selectedTemplate(categoryKey)||base.opening||'';
   const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
-  if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items));
+  if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
+  if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items));
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
-  const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY'].includes(categoryKey);
+  const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY','HARD_INQUIRY'].includes(categoryKey);
   const closing=category?.closing || (specialCategory ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
   const genericDisputed=specialCategory?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
   const closingBlock=closing?`\n\n${closing}`:'';
-  const salutation=(categoryKey==='DISCHARGED_BANKRUPTCY'||categoryKey==='DISMISSED_BANKRUPTCY') ? 'To Whom It May Concern:' : `Dear ${bureau.name}:`;
+  const salutation=(categoryKey==='DISCHARGED_BANKRUPTCY'||categoryKey==='DISMISSED_BANKRUPTCY'||categoryKey==='HARD_INQUIRY') ? 'To Whom It May Concern:' : `Dear ${bureau.name}:`;
   return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\n${salutation}\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
 }
 function clearLetters(){results.innerHTML='';results.classList.add('hidden');emptyState.classList.remove('hidden');resultCount.textContent='0 letters';resultsTitle.textContent='No case loaded';resultsSubtitle.innerHTML='Click <strong>New Case</strong> to select the letter category and enter the case.';showToast('Letters cleared');}
