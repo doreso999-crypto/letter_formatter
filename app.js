@@ -82,7 +82,7 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   const category=window.LETTER_CATEGORY_MAP?.[categoryKey];
   let body=selectedTemplate(categoryKey)||base.opening||'';
   const disputed=itemLines(items);
-  if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
+  if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION' || categoryKey==='FACTUAL') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
   if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items)).replace(/\n\s*I DID NOT AUTHORIZE THIS INQUIRY\. PLEASE DELETE THIS IMMEDIATELY\s*$/,'');
   if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
