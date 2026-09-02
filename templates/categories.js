@@ -1,27 +1,11 @@
-window.LETTER_CATEGORY_TEMPLATES = {
-  OPEN_CLOSED_LATE: {
-    label: 'Open / Closed / Late Payment',
-    description: 'Open, closed, or late-payment account reporting.',
-    note: 'Please verify the reported account status, payment history, dates, and other material fields for this account.'
-  },
-  CHARGE_OFF_COLLECTION_REPOSSESSION: {
-    label: 'Charge-Off / Collection / Repossession',
-    description: 'Charge-off, collection, or repossession reporting.',
-    note: 'Please verify the accuracy, completeness, ownership, balance, status, dates, and any collection or repossession comments associated with this account.'
-  },
-  BANKRUPTCY: {
-    label: 'Bankruptcy',
-    description: 'Bankruptcy-related account reporting.',
-    note: 'Please verify the bankruptcy-related status, chapter, disposition, dates, balance, and comments being reported for this account.'
-  },
-  HARD_INQUIRY: {
-    label: 'Hard Inquiry',
-    description: 'Hard credit inquiry reporting.',
-    note: 'Please verify the inquiry source, date, permissible purpose, and accuracy of the inquiry as reported on my consumer file.'
-  },
-  PERSONAL_INFORMATION: {
-    label: 'Personal Information',
-    description: 'Incorrect personal-identification information.',
-    note: 'Please verify and correct or delete any inaccurate names, addresses, dates of birth, Social Security number data, or other identifying information.'
-  }
-};
+window.LETTER_CATEGORY_OPTIONS = [
+  { key: 'LATE_PAYMENT', label: 'Late Payment (for Deletion)', templateKey: 'latePayment', description: 'Dispute a late-payment mark and request deletion when it cannot be verified.' },
+  { key: 'DISMISSED_BANKRUPTCY', label: 'Dismissed Bankruptcy', templateKey: 'dismissedBankruptcy', description: 'Bankruptcy reporting identified as dismissed.' },
+  { key: 'DISCHARGED_BANKRUPTCY', label: 'Discharged Bankruptcy', templateKey: 'dischargedBankruptcy', description: 'Bankruptcy reporting identified as discharged.' },
+  { key: 'CHAPTER_7_BANKRUPTCY', label: 'Chapter 7 Bankruptcy', templateKey: 'chapter7Bankruptcy', description: 'Chapter 7 bankruptcy reporting.' },
+  { key: 'CHAPTER_13_BANKRUPTCY', label: 'Chapter 13 Bankruptcy', templateKey: 'chapter13Bankruptcy', description: 'Chapter 13 bankruptcy reporting.' },
+  { key: 'HARD_INQUIRY', label: 'Hard Inquiry', templateKey: 'hardInquiry', description: 'Hard credit inquiry dispute.' },
+  { key: 'PERSONAL_INFORMATION', label: 'Personal Information', templateKey: 'personalInformation', description: 'Incorrect personal information dispute.' }
+];
+
+window.LETTER_CATEGORY_MAP = Object.fromEntries(window.LETTER_CATEGORY_OPTIONS.map(option => [option.key, option]));
