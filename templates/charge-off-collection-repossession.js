@@ -1,2 +1,0 @@
-window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
-window.LETTER_TEMPLATES.chargeOffCollectionRepossession = `I am disputing the reported charge-off, collection, and/or repossession information for the account listed below. Please conduct a reasonable reinvestigation of the account ownership, balance, status, dates, payment history, and comments and correct or delete any information that cannot be verified as accurate and complete.`;
