@@ -1,2 +1,2 @@
 window.LETTER_TEMPLATES = window.LETTER_TEMPLATES || {};
-window.LETTER_TEMPLATES.personalInformation = `I am disputing the personal information identified below. Please conduct a reasonable reinvestigation of the inaccurate identifying information and correct or delete any information that cannot be verified as accurate and complete.`;
+window.LETTER_TEMPLATES.personalInformation = 'I am writing to dispute inaccurate personal information appearing on my consumer report. Please verify the identifying information associated with my file and remove or correct any information that is inaccurate, incomplete, or cannot be verified.';
