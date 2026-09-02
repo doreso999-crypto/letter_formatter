@@ -3,7 +3,7 @@ window.LETTER_TEMPLATES.dischargedBankruptcy = `I am formally disputing the accu
 
 According to my records, the bankruptcy identified below is being reported inaccurately:
 
-Bankruptcy – Case Number: [[BANKRUPTCY_CASE_NUMBER]] – Filing Date: [[BANKRUPTCY_FILING_DATE]]
+[[BANKRUPTCY_ITEMS]]
 
 This bankruptcy has been discharged, yet the reporting and any associated derogatory information do not accurately reflect the current status of the case. Any inaccurate or misleading information connected to the bankruptcy may improperly affect my credit file and creditworthiness.
 
