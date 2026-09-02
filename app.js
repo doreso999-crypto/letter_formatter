@@ -41,21 +41,48 @@ function detectBureaus(line) {
 }
 function parseItems(text) {
   const lines=String(text||'').replace(/\r/g,'').split('\n').map(line=>line.trim());
-  const items=[]; let i=0; let currentBureau=null;
+  const items=[];
+  let i=0;
+  let currentBureau=null;
+  let inquiryMode=false;
+
   while(i<lines.length){
     const raw=lines[i];
     if(!raw){i++;continue;}
-    const cleanedLine=raw.replace(/^[-•]\s*/,'').trim();
-    const heading=cleanedLine.replace(/[:：]\s*$/,'').toUpperCase();
-    const headingCode = heading==='EQUIFAX' ? 'EQU' : heading==='EXPERIAN' ? 'EXP' : heading==='TRANSUNION' ? 'TU' : null;
-    if(headingCode){ currentBureau=headingCode; i++; continue; }
 
-    const inquiryMatch=cleanedLine.match(/^(.+?)\s+(\d{1,2}\/\d{1,2}\/\d{2,4})$/);
-    if(inquiryMatch && currentBureau){
-      items.push({label:inquiryMatch[1].trim(),identifier:inquiryMatch[2],balance:inquiryMatch[2],details:'HARD INQUIRY',bureaus:[currentBureau]});
-      i++; continue;
+    // Support bureau headings such as "EQUIFAX:" and keep that bureau active
+    // until another bureau heading appears.
+    const cleanedLine=raw.replace(/^[-•*]\s*/,'').trim();
+    const heading=cleanedLine.replace(/[:：]\s*$/,'').trim().toUpperCase();
+    const headingCode = heading==='EQUIFAX' ? 'EQU' : heading==='EXPERIAN' ? 'EXP' : heading==='TRANSUNION' ? 'TU' : null;
+    if(headingCode){
+      currentBureau=headingCode;
+      inquiryMode=true;
+      i++;
+      continue;
     }
 
+    // Hard-inquiry format:
+    // - creditor name 12/06/2025
+    // Multiple inquiry rows may appear under one bureau heading.
+    const inquiryMatch=cleanedLine.match(/^(.+?)\s+(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\s*$/);
+    if(inquiryMode && currentBureau && inquiryMatch){
+      const creditor=clean(inquiryMatch[1].replace(/^[\-•*]\s*/,'').trim());
+      const inquiryDate=inquiryMatch[2].replace(/-/g,'/');
+      if(creditor && inquiryDate){
+        items.push({
+          label: creditor,
+          identifier: inquiryDate,
+          balance: inquiryDate,
+          details: 'HARD INQUIRY',
+          bureaus: [currentBureau]
+        });
+      }
+      i++;
+      continue;
+    }
+
+    // Keep normal four-line account parsing available for all other categories.
     const block=lines.slice(i,i+4);
     if(block.length===4 && block.every(Boolean)){
       const [label,identifier,balance,details]=block.map(clean), bureaus=detectBureaus(details);
@@ -63,6 +90,7 @@ function parseItems(text) {
       const validValue=/\$?\s*-?\d/.test(balance) || /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(balance);
       if(validIdentifier && validValue && bureaus.length){ items.push({label,identifier,balance,details,bureaus}); i+=4; continue; }
     }
+
     i++;
   }
   return items;
@@ -120,5 +148,5 @@ function closeModal(){caseModal.classList.add('hidden');caseModal.setAttribute('
 function updateDcDateNote(){ $('dcDateNote').textContent=$('letterDate').value?`Washington, DC · ${formatLetterDate($('letterDate').value)}`:'Washington, DC'; }
 $('newCaseBtn').addEventListener('click',openModal);$('closeModalBtn').addEventListener('click',closeModal);$('cancelBtn').addEventListener('click',closeModal);$('clearLettersBtn').addEventListener('click',clearLetters);$('letterDate').addEventListener('change',updateDcDateNote);$('letterCategory').addEventListener('change',()=>{const option=window.LETTER_CATEGORY_MAP?.[$('letterCategory').value];$('categoryNote').textContent=option?.description||'The selected category controls the letter wording.';});
 caseModal.addEventListener('click',e=>{if(e.target===caseModal)closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!caseModal.classList.contains('hidden'))closeModal();});
-caseForm.addEventListener('submit',e=>{e.preventDefault();modalError.classList.add('hidden');const person=parsePersonalInfo($('personalInput').value),items=parseItems($('accountInput').value),categoryKey=$('letterCategory').value,dateValue=$('letterDate').value;if(!categoryKey)return showModalError('Please select a letter category.');if(!person.name)return showModalError('Please provide the client name.');if(!person.address)return showModalError('Please provide the client address.');if(!dateValue)return showModalError('Please select a letter date.');if(!items.length)return showModalError('No valid report items were found. Each item currently needs four lines: item, identifier, balance/value, and bureau/details.');renderLetters(person,items,formatLetterDate(dateValue),categoryKey);closeModal();showToast('Letters generated');});
+caseForm.addEventListener('submit',e=>{e.preventDefault();modalError.classList.add('hidden');const person=parsePersonalInfo($('personalInput').value),items=parseItems($('accountInput').value),categoryKey=$('letterCategory').value,dateValue=$('letterDate').value;if(!categoryKey)return showModalError('Please select a letter category.');if(!person.name)return showModalError('Please provide the client name.');if(!person.address)return showModalError('Please provide the client address.');if(!dateValue)return showModalError('Please select a letter date.');if(!items.length)return showModalError('No valid report items were found. Use the standard four-line account format, or for Hard Inquiry use bureau headings such as EQUIFAX: followed by one or more "creditor date" lines.');renderLetters(person,items,formatLetterDate(dateValue),categoryKey);closeModal();showToast('Letters generated');});
 window.addEventListener('load',()=>{$('personalInput').value=EXAMPLE_PERSONAL;$('letterDate').value=getWashingtonDateInputValue();updateDcDateNote();});
