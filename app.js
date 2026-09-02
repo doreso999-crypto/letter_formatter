@@ -65,13 +65,7 @@ function parseItems(text) {
       const creditor=clean(inquiryMatch[1]);
       const inquiryDate=inquiryMatch[2].replace(/-/g,'/');
       if(creditor && inquiryDate){
-        items.push({
-          label: creditor,
-          identifier: inquiryDate,
-          balance: inquiryDate,
-          details: 'HARD INQUIRY',
-          bureaus: [currentBureau]
-        });
+        items.push({label: creditor,identifier: inquiryDate,balance: inquiryDate,details:'HARD INQUIRY',bureaus:[currentBureau]});
       }
       i++;
       continue;
@@ -94,8 +88,15 @@ function selectedTemplate(categoryKey){
   const option=window.LETTER_CATEGORY_MAP?.[categoryKey];
   return option?.templateKey ? (window.LETTER_TEMPLATES?.[option.templateKey] || '') : '';
 }
+function bureauNames(items){
+  const codes=[...new Set(items.flatMap(x=>x.bureaus||[]))];
+  return codes.map(code=>BUREAUS[code]?.name.replace(' Information Services LLC','').replace(' Consumer Dispute Center','') || code).join(', ');
+}
 function itemLines(items){ return items.map((x,i)=>`${i+1}. ${x.label}\nAccount number: ${x.identifier}`).join('\n\n'); }
 function inquiryLines(items){ return items.map((x,i)=>`${i+1}. ${x.label} ${x.identifier}`).join('\n') + (items.length ? '\n\n    I DID NOT AUTHORIZE THIS INQUIRY. PLEASE DELETE THIS IMMEDIATELY' : ''); }
+function factualLines(items){
+  return items.map(x=>`**${x.label}**\nAccount #: ${x.identifier}\nBalance: ${x.balance}\nReporting: ${bureauNames([x])}\nReported Status: ${x.details}`).join('\n\n');
+}
 function bankruptcyLines(items){ return items.map(x=>`Bankruptcy – Case Number: ${x.identifier} – Filing Date: ${x.balance}`).join('\n\n'); }
 function buildLetter({person,bureau,items,date,categoryKey}){
   const base=window.LETTER_TEMPLATES?.base||{};
@@ -105,13 +106,14 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   const disputed=itemLines(items);
   if(categoryKey==='LATE_PAYMENT' || categoryKey==='DELETION') body=body.replace('[[DISPUTED_ITEMS]]',disputed);
   if(categoryKey==='HARD_INQUIRY') body=body.replace('[[INQUIRY_ITEMS]]',inquiryLines(items)).replace(/\n\s*I DID NOT AUTHORIZE THIS INQUIRY\. PLEASE DELETE THIS IMMEDIATELY\s*$/,'');
+  if(categoryKey==='FACTUAL') body=body.replace('[[FACTUAL_ITEMS]]',factualLines(items));
   if(categoryKey==='DISCHARGED_BANKRUPTCY' || categoryKey==='DISMISSED_BANKRUPTCY') body=body.replace('[[BANKRUPTCY_ITEMS]]',bankruptcyLines(items)).replace('[[CASE_NUMBER]]',items[0]?.identifier||'').replace('[[FILING_DATE]]',items[0]?.balance||'');
   const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
-  const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY','HARD_INQUIRY'].includes(categoryKey);
+  const specialCategory=['LATE_PAYMENT','DELETION','DISCHARGED_BANKRUPTCY','DISMISSED_BANKRUPTCY','HARD_INQUIRY','FACTUAL'].includes(categoryKey);
   const closing=category?.closing || (specialCategory ? '' : (base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.'));
   const genericDisputed=specialCategory?'':`\n\nDISPUTED ITEM(S)\n\n${disputed}`;
   const closingBlock=closing?`\n\n${closing}`:'';
-  const salutation=(categoryKey==='DISCHARGED_BANKRUPTCY'||categoryKey==='DISMISSED_BANKRUPTCY'||categoryKey==='HARD_INQUIRY') ? 'To Whom It May Concern:' : `Dear ${bureau.name}:`;
+  const salutation=(categoryKey==='DISCHARGED_BANKRUPTCY'||categoryKey==='DISMISSED_BANKRUPTCY'||categoryKey==='HARD_INQUIRY'||categoryKey==='FACTUAL') ? 'To Whom It May Concern:' : `Dear ${bureau.name}:`;
   return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\n${salutation}\n\n${body}${genericDisputed}${closingBlock}\n\nSincerely,\n\n${person.name}`;
 }
 function clearLetters(){results.innerHTML='';results.classList.add('hidden');emptyState.classList.remove('hidden');resultCount.textContent='0 letters';resultsTitle.textContent='No case loaded';resultsSubtitle.innerHTML='Click <strong>New Case</strong> to select the letter category and enter the case.';showToast('Letters cleared');}
