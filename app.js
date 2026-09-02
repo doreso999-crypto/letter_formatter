@@ -66,9 +66,9 @@ function buildLetter({person,bureau,items,date,categoryKey}){
   const identity=[person.name,person.address,person.dob?`DOB: ${person.dob}`:'',person.ssn?`SSN: ${person.ssn}`:''].filter(Boolean).join('\n');
   const category=window.LETTER_CATEGORY_MAP?.[categoryKey];
   const body=selectedTemplate(categoryKey)||base.opening||'';
-  const subject=`Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
-  const closing=base.closing||'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.';
-  return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\nDear ${bureau.name} Consumer Dispute Department:\n\n${body}\n\nDISPUTED ITEM(S)\n\n${itemLines(items)}\n\n${closing}\n\nThank you for your attention to this dispute.\n\nSincerely,\n\n${person.name}`;
+  const subject=category?.subject || `Re: ${category?.label || base.subject || 'Credit Report Dispute'}`;
+  const closing=category?.closing || base.closing || 'Please investigate each disputed item individually and correct or delete any information that cannot be verified as accurate and complete.';
+  return `${identity}\n\n${date}\n\n${bureau.address}\n\n${subject}\n\nDear ${bureau.name} Consumer Dispute Department:\n\n${body}\n\nDISPUTED ITEM(S)\n\n${itemLines(items)}\n\n${closing}\n\n${person.name}`;
 }
 function clearLetters(){results.innerHTML='';results.classList.add('hidden');emptyState.classList.remove('hidden');resultCount.textContent='0 letters';resultsTitle.textContent='No case loaded';resultsSubtitle.innerHTML='Click <strong>New Case</strong> to select the letter category and enter the case.';showToast('Letters cleared');}
 function renderLetters(person,items,date,categoryKey){
