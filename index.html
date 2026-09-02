@@ -10,64 +10,41 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">LF</div>
-        <div><h1>Letter Formatter</h1><p>Build bureau-specific letters from compact report notes.</p></div>
-      </div>
+      <div class="brand"><div class="brand-mark">LF</div><div><h1>Letter Formatter</h1><p>Choose a letter type, paste a case, and route each item to the right bureau.</p></div></div>
       <button class="primary-btn" id="newCaseBtn" type="button"><span>＋ New Case</span><span class="arrow">→</span></button>
     </header>
-
     <main>
       <section class="hero panel">
-        <div><span class="eyebrow">LETTER WORKSPACE</span><h2>Generate clean letters in a few clicks.</h2><p>Paste the client once, paste the report items, and the app routes each item to the correct bureau and category.</p></div>
-        <div class="routing-legend">
-          <div><span class="tag equ">EQU</span><span>Equifax</span></div>
-          <div><span class="tag exp">EX / EXP</span><span>Experian</span></div>
-          <div><span class="tag tu">TU</span><span>TransUnion</span></div>
-          <div><span class="tag all">3BR</span><span>All bureaus</span></div>
-        </div>
+        <div><span class="eyebrow">LETTER WORKSPACE</span><h2>Build the letter you need.</h2><p>The category you choose controls the template. Bureau codes in the pasted report data control which bureau columns are created.</p></div>
+        <div class="routing-legend"><div><span class="tag equ">EQU</span><span>Equifax</span></div><div><span class="tag exp">EX / EXP</span><span>Experian</span></div><div><span class="tag tu">TU</span><span>TransUnion</span></div><div><span class="tag all">3BR</span><span>All bureaus</span></div></div>
       </section>
-
-      <section class="category-strip panel">
-        <div class="category-title"><span class="eyebrow">CATEGORIES</span><strong>Automatic item classification</strong></div>
-        <div class="category-list" id="categoryLegend"></div>
-      </section>
-
       <section class="results-panel panel">
-        <div class="panel-heading">
-          <div><span class="eyebrow">GENERATED OUTPUT</span><h2 id="resultsTitle">No case loaded</h2><p id="resultsSubtitle">Click <strong>New Case</strong> to enter personal information and report items.</p></div>
-          <div class="results-actions"><div class="result-count" id="resultCount">0 letters</div><button class="ghost-btn danger-btn" id="clearLettersBtn" type="button">Clear Letters</button></div>
-        </div>
-        <div id="emptyState" class="empty-state"><div class="empty-icon">✦</div><h3>Your bureau letters will appear here</h3><p>The result area changes to 1, 2, or 3 columns depending on the bureaus represented by your data.</p></div>
+        <div class="panel-heading"><div><span class="eyebrow">GENERATED OUTPUT</span><h2 id="resultsTitle">No case loaded</h2><p id="resultsSubtitle">Click <strong>New Case</strong> to select the category and enter the case.</p></div><div class="results-actions"><div class="result-count" id="resultCount">0 letters</div><button class="ghost-btn danger-btn" id="clearLettersBtn" type="button">Clear Letters</button></div></div>
+        <div id="emptyState" class="empty-state"><div class="empty-icon">✦</div><h3>Your bureau letters will appear here</h3><p>The output becomes 1, 2, or 3 columns according to the bureaus represented by the pasted items.</p></div>
         <div id="results" class="results hidden"></div>
       </section>
     </main>
-
     <footer class="footer"><span>Letter Formatter</span><span>Everything is processed locally in your browser.</span></footer>
   </div>
-
   <div class="modal-backdrop hidden" id="caseModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-head"><div><span class="eyebrow">NEW CASE</span><h2 id="modalTitle">Create letters</h2><p>Paste the information once. The parser handles the rest.</p></div><button class="icon-btn" id="closeModalBtn" type="button" aria-label="Close">×</button></div>
+      <div class="modal-head"><div><span class="eyebrow">NEW CASE</span><h2 id="modalTitle">Create letters</h2><p>Choose the template category, then paste the case data.</p></div><button class="icon-btn" id="closeModalBtn" type="button" aria-label="Close">×</button></div>
       <form id="caseForm">
-        <section class="form-section">
-          <div class="section-heading"><div class="section-number">01</div><div><h3>Personal Info</h3><p>Paste the complete client information in one block.</p></div></div>
+        <section class="form-section"><div class="section-heading"><div class="section-number">01</div><div><h3>Letter Category</h3><p>Select exactly which letter template to use.</p></div></div>
+          <label class="field">Category<select id="letterCategory" required><option value="">Select a letter category…</option><option value="LATE_PAYMENT">Late Payment (for Deletion)</option><option value="DISMISSED_BANKRUPTCY">Dismissed Bankruptcy</option><option value="DISCHARGED_BANKRUPTCY">Discharged Bankruptcy</option><option value="CHAPTER_7_BANKRUPTCY">Chapter 7 Bankruptcy</option><option value="CHAPTER_13_BANKRUPTCY">Chapter 13 Bankruptcy</option><option value="HARD_INQUIRY">Hard Inquiries</option><option value="PERSONAL_INFORMATION">Personal Information</option></select><span class="field-note" id="categoryNote">The selected category controls the letter wording.</span></label>
+        </section>
+        <section class="form-section"><div class="section-heading"><div class="section-number">02</div><div><h3>Personal Info</h3><p>Paste the complete client information once.</p></div></div>
           <label class="field">Personal Information<textarea id="personalInput" class="personal-input" spellcheck="false" required placeholder="John Doe
 2616 Kings Gate Dr
 Carrollton TX 75006
 DOB: 06/26/1968
 SSN: 123-45-6789"></textarea></label>
-          <div class="format-note"><span>Parser recognizes</span><code>Name</code><code>Address</code><code>DOB:</code><code>SSN:</code></div>
         </section>
-
-        <section class="form-section">
-          <div class="section-heading"><div class="section-number">02</div><div><h3>Letter Date</h3><p>Defaults to the current date in Washington, DC.</p></div></div>
+        <section class="form-section"><div class="section-heading"><div class="section-number">03</div><div><h3>Letter Date</h3><p>Defaults to the current date in Washington, DC.</p></div></div>
           <label class="field">Date<input id="letterDate" type="date" required /><span class="field-note" id="dcDateNote">Washington, DC</span></label>
         </section>
-
-        <section class="form-section">
-          <div class="section-heading"><div class="section-number">03</div><div><h3>Negative Items</h3><p>Paste one 4-line item block per account, inquiry, or other report item.</p></div></div>
-          <label class="field">Report Data<textarea id="accountInput" spellcheck="false" required placeholder="TBOM CCI MC
+        <section class="form-section"><div class="section-heading"><div class="section-number">04</div><div><h3>Report Data</h3><p>Paste one 4-line item block per account or report item.</p></div></div>
+          <label class="field">Accounts / Items<textarea id="accountInput" spellcheck="false" required placeholder="TBOM CCI MC
 Xxxxxxxx6638
 $531
 EX - TU - OPEN LP
@@ -75,29 +52,15 @@ EX - TU - OPEN LP
 THD/CBNA
 Xxxxxxxxxxxx7165
 $244
-3BR - LATE PAYMENT
-
-CAPITAL ONE
-Xxxxxxxx3748
-$0
-3BR - INCLUDED IN BANKRUPTCY - CHAPTER 7 - DISCHARGED"></textarea></label>
-          <div class="format-note"><span>Format</span><code>Creditor</code><code>Account #</code><code>Balance</code><code>Bureaus / Category / Details</code></div>
+3BR - OPEN LP"></textarea></label>
+          <div class="format-note"><span>Format</span><code>Item</code><code>Account #</code><code>Balance / Date</code><code>Bureaus / Details</code></div>
         </section>
-
         <div class="modal-error hidden" id="modalError"></div>
         <div class="modal-actions"><button class="ghost-btn" id="cancelBtn" type="button">Cancel</button><button class="primary-btn" type="submit"><span>Generate Letters</span><span class="arrow">→</span></button></div>
       </form>
     </div>
   </div>
-
   <div class="toast" id="toast"></div>
-  <script src="templates/base.js"></script>
-  <script src="templates/categories.js"></script>
-  <script src="templates/open-closed-late.js"></script>
-  <script src="templates/charge-off-collection-repossession.js"></script>
-  <script src="templates/bankruptcy.js"></script>
-  <script src="templates/hard-inquiry.js"></script>
-  <script src="templates/personal-information.js"></script>
-  <script src="app.js"></script>
+  <script src="templates/base.js"></script><script src="templates/categories.js"></script><script src="templates/late-payment.js"></script><script src="templates/dismissed-bankruptcy.js"></script><script src="templates/discharged-bankruptcy.js"></script><script src="templates/chapter-7-bankruptcy.js"></script><script src="templates/chapter-13-bankruptcy.js"></script><script src="templates/hard-inquiry.js"></script><script src="templates/personal-information.js"></script><script src="app.js"></script>
 </body>
 </html>
